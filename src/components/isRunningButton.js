@@ -9,4 +9,13 @@ const handleIsRunningButton = (e, data) => {
   }
 };
 
-export const isRunningButton = () => ({ click: handleIsRunningButton });
+const style = (data) => `
+color: ${data.isRunning ? "#111" : "#f2f2f2"};
+background-color: ${data.isRunning ? "#cc5555" : "#55cc55"};
+`;
+
+//TODO: HTML template as part of the component here
+export const isRunningButton = () => ({
+  handlers: { click: handleIsRunningButton },
+  style
+});

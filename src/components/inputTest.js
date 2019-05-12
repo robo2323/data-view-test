@@ -1,7 +1,7 @@
 const handleInput = (e, data) => {
-  data.inputText = e.target.value;
+  data.inputTest = { ...data.inputTest, text: e.target.value };
 };
 
 export const inputTest = () => ({
-  input: handleInput
+  handlers: { input: handleInput }
 });

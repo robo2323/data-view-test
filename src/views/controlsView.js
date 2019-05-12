@@ -7,7 +7,7 @@ const data = {
   isRunning: false,
   info: 0,
   runningMessage: { running: "Loop is Running", stopped: "Loop is Stopped" },
-  inputText: ""
+  inputTest: { text: "" }
 };
 
 const components = {

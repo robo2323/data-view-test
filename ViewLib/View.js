@@ -4,6 +4,28 @@ const stringRegex = /(?<=(["']\b))(?:(?=(\\?))\2.)*?(?=\1)/;
 export default class View {
   constructor(template, components, dataObject, rootDivId = "root") {
     this.dataObject = dataObject;
+
+    this.data = {};
+
+    for (const prop in dataObject) {
+      const propRef = `_${prop}`;
+      const self = this;
+
+      this.data[propRef] = dataObject[prop];
+
+      Object.defineProperty(this.data, prop, {
+        set(value) {
+          this[propRef] = value;
+
+          self.render();
+        },
+
+        get() {
+          return this[propRef];
+        }
+      });
+    }
+
     this.components = components;
 
     this.rootDiv = document.getElementById(rootDivId);
@@ -16,41 +38,23 @@ export default class View {
 
     this.elements.forEach((element) => {
       const elementFunction = this.components[element.id];
-      if (elementFunction) {
+      if (typeof elementFunction === "function") {
+        const component = elementFunction();
         for (const [attributeName, method] of Object.entries(
-          elementFunction()
+          component.handlers
         )) {
           element.addEventListener(attributeName, (e) => {
             method(e, this.data);
           });
         }
+        if (typeof component.style === "function") {
+          element.setAttribute("style", component.style(this.data));
+        }
       }
       element.innerText &&
         element.setAttribute("data-value", element.innerText);
+      this.rootDiv.appendChild(element);
     });
-
-    this.data = {};
-
-    for (const prop in dataObject) {
-      const propRef = `_${prop}`;
-      const self = this;
-      const elements = this.elements;
-
-      this.data[propRef] = dataObject[prop];
-
-      Object.defineProperty(this.data, prop, {
-        set(value) {
-          this[propRef] = value;
-          console.log(elements, propRef, prop);
-
-          self.render();
-        },
-
-        get() {
-          return this[propRef];
-        }
-      });
-    }
 
     this.render = this.render.bind(this);
 
@@ -59,15 +63,17 @@ export default class View {
 
   render() {
     const focusedElement = document.activeElement;
-    this.rootDiv.innerHTML = "";
+    // this.rootDiv.innerHTML = "";
     this.elements.forEach((element) => {
       const dataValue = element.getAttribute("data-value");
       const codeRegexMatch = codeRegex.exec(dataValue);
+      let newData;
+      const dataKey = element.getAttribute("data-key");
 
       if (codeRegexMatch) {
         const [_, codeMatch] = codeRegexMatch; // eslint-disable-line no-unused-vars
         const matchParts = codeMatch.split("?");
-
+        //TODO: moe this regex stuff to constructor
         if (matchParts.length > 1) {
           const [condition, values] = matchParts;
           const [isTrueValue, isFalseValue] = values.split(":");
@@ -80,21 +86,31 @@ export default class View {
 
           if (stringRegexMatch) {
             const [stringMatch] = stringRegexMatch; // eslint-disable-line no-unused-vars
-            element.innerText = stringMatch;
+            newData = stringMatch;
           } else {
-            const dataKey = element.getAttribute("data-key");
-            element.innerText = dataKey
-              ? this.data[dataKey][value]
-              : this.data[value];
+            newData = dataKey ? this.data[dataKey][value] : this.data[value];
           }
         } else {
-          element.innerText = this.data[codeMatch];
+          newData = dataKey
+            ? this.data[dataKey][codeMatch]
+            : this.data[codeMatch];
         }
       } else {
-        element.innerText = dataValue;
+        newData = dataValue;
       }
 
-      this.rootDiv.appendChild(element);
+      if (element.innerText !== newData) {
+        element.innerText = newData;
+      }
+      const elementFunction = this.components[element.id];
+      
+      if (typeof elementFunction === "function") {
+        const component = elementFunction();
+        if (typeof component.style === "function") {
+          element.setAttribute("style", component.style(this.data));
+        }
+      }
+      // this.rootDiv.appendChild(element);
     });
     focusedElement.focus();
   }
