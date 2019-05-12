@@ -1,0 +1,35 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "indent": [
+            "warn",
+            2
+        ],
+        "brace-style": [
+            "warn",
+            "1tbs"
+        ],
+        "curly": [
+            "error"
+        ],
+        "linebreak-style": [
+            "warn",
+            "unix"
+        ],
+        "semi": [
+            "warn",
+            "always"
+        ],
+        "no-console": [
+            "off"
+        ]
+    }
+}

@@ -1,11 +1,11 @@
 const handleIsRunningButton = (e, data) => {
   switch (e.type) {
-    case "click":
-      data.isRunning = !data.isRunning;
-      break;
+  case "click":
+    data.isRunning = !data.isRunning;
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 };
 

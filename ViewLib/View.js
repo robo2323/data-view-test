@@ -1,3 +1,6 @@
+const codeRegex = /\{(.*?)\}/;
+const stringRegex = /(?<=(["']\b))(?:(?=(\\?))\2.)*?(?=\1)/;
+
 export default class View {
   constructor(template, components, dataObject, rootDivId = "root") {
     this.dataObject = dataObject;
@@ -30,31 +33,23 @@ export default class View {
 
     for (const prop in dataObject) {
       const propRef = `_${prop}`;
-      const propDescriptor = Object.getOwnPropertyDescriptor(dataObject, prop);
       const self = this;
+      const elements = this.elements;
 
-      if (propDescriptor.get) {
-        Object.defineProperty(this.data, prop, {
-          get: propDescriptor.get,
-          set(value) {
-            this[propRef] = value;
-            self.render();
-          }
-        });
-      } else {
-        this.data[propRef] = dataObject[prop];
+      this.data[propRef] = dataObject[prop];
 
-        Object.defineProperty(this.data, prop, {
-          set(value) {
-            this[propRef] = value;
-            self.render();
-          },
+      Object.defineProperty(this.data, prop, {
+        set(value) {
+          this[propRef] = value;
+          console.log(elements, propRef, prop);
 
-          get() {
-            return this[propRef];
-          }
-        });
-      }
+          self.render();
+        },
+
+        get() {
+          return this[propRef];
+        }
+      });
     }
 
     this.render = this.render.bind(this);
@@ -63,27 +58,44 @@ export default class View {
   }
 
   render() {
+    const focusedElement = document.activeElement;
     this.rootDiv.innerHTML = "";
     this.elements.forEach((element) => {
-      // Data Bool
-      if (element.matches(`[v-data-bool]`)) {
-        const dataAttribute = element.getAttribute(`v-data-bool`);
+      const dataValue = element.getAttribute("data-value");
+      const codeRegexMatch = codeRegex.exec(dataValue);
 
-        const [trueString, falseString] = element
-          .getAttribute("data-value")
-          .split("||");
+      if (codeRegexMatch) {
+        const [_, codeMatch] = codeRegexMatch; // eslint-disable-line no-unused-vars
+        const matchParts = codeMatch.split("?");
 
-        element.innerText = this.data[dataAttribute] ? trueString : falseString;
-      }
+        if (matchParts.length > 1) {
+          const [condition, values] = matchParts;
+          const [isTrueValue, isFalseValue] = values.split(":");
 
-      // Data String
-      if (element.matches(`[v-data-string]`)) {
-        const dataAttribute = element.getAttribute(`v-data-string`);
+          const value = this.data[condition.trim()]
+            ? isTrueValue.trim()
+            : isFalseValue.trim();
 
-        element.innerText = this.data[dataAttribute];
+          const stringRegexMatch = stringRegex.exec(value);
+
+          if (stringRegexMatch) {
+            const [stringMatch] = stringRegexMatch; // eslint-disable-line no-unused-vars
+            element.innerText = stringMatch;
+          } else {
+            const dataKey = element.getAttribute("data-key");
+            element.innerText = dataKey
+              ? this.data[dataKey][value]
+              : this.data[value];
+          }
+        } else {
+          element.innerText = this.data[codeMatch];
+        }
+      } else {
+        element.innerText = dataValue;
       }
 
       this.rootDiv.appendChild(element);
     });
+    focusedElement.focus();
   }
 }

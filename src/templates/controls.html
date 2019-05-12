@@ -1,2 +1,9 @@
-<h1 v-data-string="status"></h1>
-<button id="isRunningButton" v-data-bool="isRunning">Turn Off||Turn On</button>
+<!DOCTYPE html>
+<h1>View Test</h1>
+<p data-key="runningMessage">{isRunning ? running: stopped}</p>
+<p>{isRunning ? 'running': 'stopped'}</p>
+<p>{info}</p>
+<button id="isRunningButton">{isRunning ? "Turn Off" : "Turn On"}</button>
+<br />
+<input id="inputTest" type="text" />
+<p>{inputText}</p>

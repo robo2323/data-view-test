@@ -1,19 +1,18 @@
 import View from "../../ViewLib/View";
 import controls from "../templates/controls";
 import { isRunningButton } from "../components/isRunningButton";
+import { inputTest } from "../components/inputTest";
 
 const data = {
   isRunning: false,
-  status: null,
-  get status() {
-    return this.isRunning
-      ? `loop is running ${this._status || ""}`
-      : "loop is not running";
-  }
+  info: 0,
+  runningMessage: { running: "Loop is Running", stopped: "Loop is Stopped" },
+  inputText: ""
 };
 
 const components = {
-  isRunningButton
+  isRunningButton,
+  inputTest
 };
 
 const controlsView = new View(controls, components, data);
