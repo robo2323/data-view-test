@@ -103,11 +103,13 @@ export default class View {
         element.innerText = newData;
       }
       const elementFunction = this.components[element.id];
-      
+
       if (typeof elementFunction === "function") {
         const component = elementFunction();
         if (typeof component.style === "function") {
-          element.setAttribute("style", component.style(this.data));
+          const prevStyle = element.getAttribute("style");
+          const nextStyle = component.style(this.data);
+          prevStyle !== nextStyle && element.setAttribute("style", nextStyle);
         }
       }
       // this.rootDiv.appendChild(element);
